@@ -1,7 +1,8 @@
 import Marks from "../models/marksModel.js";
+import catchAsync from "../Utils/catchAsync.js";
+import AppError from "../Utils/AppError.js";
 
-const addMarks = async function (req, res) {
-  try {
+const addMarks = catchAsync(async function (req, res) {
     const mark = await Marks.create(req.body);
     res.status(200).json({
       status: "success",
@@ -9,19 +10,14 @@ const addMarks = async function (req, res) {
         mark,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        error: error.message,
-      },
-    });
-  }
-};
+});
 
-const getMarks = async function (req, res) {
-  try {
+const getMarks = catchAsync(async function (req, res) {
     const marks = await Marks.find();
+    if (marks.length === 0) {
+      throw new AppError("No marks found", 404);
+    }
+
     res.status(200).json({
       status: "success",
       data: {
@@ -29,18 +25,9 @@ const getMarks = async function (req, res) {
         marks,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        error: error.message,
-      },
-    });
-  }
-};
+});
 
-const getClassAverage = async function (req, res) {
-  try {
+const getClassAverage = catchAsync(async function (req, res) {
     const classAverage = await Marks.aggregate([
       { $match: { examType: req.query.examType } },
       {
@@ -107,6 +94,9 @@ const getClassAverage = async function (req, res) {
         },
       },
     ]);
+    if (classAverage.length === 0) {
+      throw new AppError("No class-average data found", 404);
+    }
 
     res.status(200).json({
       status: "success",
@@ -115,19 +105,9 @@ const getClassAverage = async function (req, res) {
         classAverage,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getHighestScoring = async function (req, res) {
-  try {
+const getHighestScoring = catchAsync(async function (req, res) {
     const scoringSubjects = await Marks.aggregate([
       {
         $match: { examType: req.query.examType },
@@ -166,6 +146,9 @@ const getHighestScoring = async function (req, res) {
         $limit: 3
       }
     ]);
+    if (scoringSubjects.length === 0) {
+      throw new AppError("No scoring data found", 404);
+    }
 
     res.status(200).json({
       status: "success",
@@ -174,15 +157,6 @@ const getHighestScoring = async function (req, res) {
         scoringSubjects,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
 export { addMarks, getClassAverage, getMarks, getHighestScoring };

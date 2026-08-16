@@ -1,8 +1,9 @@
 import Teacher from "../models/teacherModel.js";
 import Subject from "../models/subjectModel.js";
+import catchAsync from "../Utils/catchAsync.js";
+import AppError from "../Utils/AppError.js";
 
-const createTeacher = async function (req, res) {
-  try {
+const createTeacher = catchAsync(async function (req, res) {
     const subject = await Subject.findOne({
       name: req.body.subject,
     });
@@ -22,20 +23,13 @@ const createTeacher = async function (req, res) {
         teacher,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getTeachers = async function (req, res) {
-  try {
+const getTeachers = catchAsync(async function (req, res) {
     const teachers = await Teacher.find();
+    if (teachers.length === 0) {
+      throw new AppError("No teachers found", 404);
+    }
 
     res.status(200).json({
       status: "success",
@@ -44,15 +38,6 @@ const getTeachers = async function (req, res) {
         teachers,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
 export { createTeacher, getTeachers };

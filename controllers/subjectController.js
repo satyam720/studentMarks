@@ -1,7 +1,8 @@
 import Subject from "../models/subjectModel.js";
+import catchAsync from "../Utils/catchAsync.js";
+import AppError from "../Utils/AppError.js";
 
-const createSubject = async function(req, res) {
-    try {
+const createSubject = catchAsync(async function(req, res) {
         const subject = await Subject.create(req.body);
         res.status(201).json({
             status: 'succes',
@@ -9,20 +10,13 @@ const createSubject = async function(req, res) {
                 subject
             }
         })
-    } catch (error) {
-        res.status(400).json({
-            status: 'fail',
-            data: {
-                message: error.message,
-                stack: error.stack
-            }
-        })
-    }
-}
+})
 
-const getSubject = async function (req, res){
-    try {
+const getSubject = catchAsync(async function (req, res){
         const subject = await Subject.find();
+        if (subject.length === 0) {
+            throw new AppError("No subjects found", 404);
+        }
         
         res.status(200).json({
             message: 'success',
@@ -31,15 +25,6 @@ const getSubject = async function (req, res){
                 subject
             }
         })
-    } catch (error) {
-        res.status(400).json({
-            status: 'fail',
-            data: {
-                message: error.message,
-                stack: error.stack
-            }
-        })
-    }
-}
+})
 
 export {createSubject, getSubject};

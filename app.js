@@ -5,6 +5,8 @@ import teacherRoute from './routes/teacherRoute.js';
 import classRoute from './routes/classRoute.js';
 import studentRoute from './routes/studentRoute.js';
 import marksRoute from './routes/marksRoute.js';
+import AppError from './Utils/AppError.js';
+import globalError from './controllers/errorController.js';
 
 const app = express();
 
@@ -20,5 +22,11 @@ app.use('/api/v1/teachers', teacherRoute);
 app.use('/api/v1/classes', classRoute);
 app.use('/api/v1/students', studentRoute);
 app.use('/api/v1/marks', marksRoute);
+
+app.all(/.*/, (req, res, next) => {
+    next(new AppError(`Can't find the ${req.originalUrl} on this server`, 400));
+})
+
+app.use(globalError);
 
 export default app;

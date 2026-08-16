@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import Class from "../models/classModel.js";
 import Student from "../models/studentModel.js";
+import catchAsync from "../Utils/catchAsync.js";
+import AppError from "../Utils/AppError.js";
 
-const createStudent = async function (req, res) {
-  try {
+const createStudent = catchAsync(async function (req, res) {
     const standard = await Class.findById(req.body.class);
     if (!standard) {
       throw new Error("Student assigned to invalid class");
@@ -27,20 +28,13 @@ const createStudent = async function (req, res) {
         student,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getStudents = async function (req, res) {
-  try {
+const getStudents = catchAsync(async function (req, res) {
     const student = await Student.find();
+    if (student.length === 0) {
+      throw new AppError("No students found", 404);
+    }
 
     res.status(200).json({
       message: "success",
@@ -49,20 +43,13 @@ const getStudents = async function (req, res) {
         student,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getStudent = async function (req, res) {
-  try {
+const getStudent = catchAsync(async function (req, res) {
     const student = await Student.findById(req.params.id);
+    if (!student) {
+      throw new AppError("Student not found", 404);
+    }
 
     res.status(200).json({
       message: "success",
@@ -70,19 +57,9 @@ const getStudent = async function (req, res) {
         student,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getClassStudents = async function (req, res) {
-  try {
+const getClassStudents = catchAsync(async function (req, res) {
     const match = {};
 
     if (req.query.grade && req.query.section) {
@@ -92,10 +69,7 @@ const getClassStudents = async function (req, res) {
       });
 
       if (!classDoc) {
-        return res.status(404).json({
-          status: "fail",
-          message: "Class not found",
-        });
+        throw new AppError("Class not found", 404);
       }
 
       match.class = classDoc._id;
@@ -142,6 +116,9 @@ const getClassStudents = async function (req, res) {
         },
       },
     ]);
+    if (classStudents.length === 0) {
+      throw new AppError("No students found for this class", 404);
+    }
 
     res.status(200).json({
       status: "success",
@@ -150,15 +127,6 @@ const getClassStudents = async function (req, res) {
         classStudents,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
 export { createStudent, getStudents, getStudent, getClassStudents };

@@ -1,9 +1,10 @@
 import Class from "../models/classModel.js";
 import Subject from "../models/subjectModel.js";
 import Teacher from "../models/teacherModel.js";
+import catchAsync from "../Utils/catchAsync.js";
+import AppError from "../Utils/AppError.js";
 
-const createClass = async function (req, res) {
-  try {
+const createClass = catchAsync(async function (req, res) {
     const subjects = await Subject.find({
       _id: { $in: req.body.subjects },
     });
@@ -40,20 +41,13 @@ const createClass = async function (req, res) {
         classes,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
-const getClass = async function (req, res) {
-  try {
+const getClass = catchAsync(async function (req, res) {
     const classes = await Class.find();
+    if (classes.length === 0) {
+      throw new AppError("No classes found", 404);
+    }
 
     res.status(200).json({
       status: "success",
@@ -62,15 +56,6 @@ const getClass = async function (req, res) {
         classes,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      data: {
-        message: error.message,
-        stack: error.stack,
-      },
-    });
-  }
-};
+});
 
 export { createClass, getClass };
