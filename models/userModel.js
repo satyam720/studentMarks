@@ -44,8 +44,29 @@ userSchema.pre('save', async function (){
     this.passwordConfirm = undefined;
 });
 
+userSchema.pre('save', function() {
+    if(!this.isModified('password')){
+        return;
+    }
+
+    this.passwordChangedAt = Date.now() - 1000;
+})
+
 userSchema.methods.correctPassword = async function(candidatePassword, password){
     return await bcrypt.compare(candidatePassword, password);
+}
+
+userSchema.methods.changedPasswordAfter = function (decodeTime) {
+    if(!this.passwordChangedAt){
+        return false;
+    }
+    
+    const changedTimeStamp = parseInt(this.passwordChangedAt.getTime()/1000, 10);
+    // if decoded time is greater than last password change time
+    // then changedPasswordAfter should return true;
+
+    return decodeTime < changedTimeStamp;
+    
 }
 
 const User = mongoose.model('User', userSchema);
