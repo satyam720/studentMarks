@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema({
         },
         select: false
     },
+    role: String,
     passwordChangedAt: Date,
 
 });
