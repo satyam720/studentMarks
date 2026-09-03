@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import isEmail from "validator/lib/isEmail.js";
 import bcrypt from 'bcrypt'
+import crypto from 'crypto';
 
 const userSchema = mongoose.Schema({
     name: {
@@ -30,6 +31,8 @@ const userSchema = mongoose.Schema({
         },
         select: false
     },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
     role: String,
     passwordChangedAt: Date,
 
@@ -68,6 +71,14 @@ userSchema.methods.changedPasswordAfter = function (decodeTime) {
 
     return decodeTime < changedTimeStamp;
     
+}
+
+userSchema.methods.createPasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken = crypto.createHash('SHA256').update(resetToken).digest('hex');
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000
+
+    return resetToken;
 }
 
 const User = mongoose.model('User', userSchema);
